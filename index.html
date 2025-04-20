@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Virtual Therapist</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: #e6f2ff;
+    }
+
+    .container {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    header {
+      background-color: #3f87a6;
+      color: white;
+      padding: 16px;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    #chat {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      background: #f9f9f9;
+    }
+
+    .message {
+      margin: 8px 0;
+      padding: 10px 14px;
+      border-radius: 16px;
+      max-width: 80%;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    .user {
+      background-color: #d1ecf1;
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .bot {
+      background-color: #e2e3e5;
+      align-self: flex-start;
+    }
+
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .input-area {
+      display: flex;
+      padding: 12px;
+      border-top: 1px solid #ccc;
+      background: #fff;
+      align-items: center;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .input-area button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      border: none;
+      background-color: #3f87a6;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover {
+      background-color: #346f8b;
+    }
+
+    .mic-button {
+      background-color: #e05d5d;
+      color: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      margin-left: 10px;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+    }
+
+    .mic-button:hover {
+      background-color: #c34747;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>Virtual Therapist</header>
+    <div id="chat"></div>
+    <div class="input-area">
+      <input id="msg" type="text" placeholder="Talk to your therapist..." />
+      <button onclick="sendMsg()">Send</button>
+      <button class="mic-button" onclick="startSpeech()">🎤</button>
+    </div>
+  </div>
+
+  <script>
+    const apiKey = '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'; // Replace this with your actual Groq API key
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("msg");
+  
+    const messages = [
+      {
+        role: "system",
+        content: "You are a calm, soothing female therapist. Speak like a kind friend. Keep replies short and supportive, no more than 2-3 sentences."
+      }
+    ];
+  
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        sendMsg();
+      }
+    });
+  
+    function addMessage(content, sender) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `message ${sender}`;
+      msgDiv.textContent = content;
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  
+    function speak(text) {
+      const synth = window.speechSynthesis;
+      let voices = synth.getVoices();
+      
+      // Try to find a calm-sounding female voice
+      const voice = voices.find(v =>
+        /female/i.test(v.name) &&
+        /en/i.test(v.lang)
+      ) || voices.find(v => /zira|Google UK English Female/i.test(v.name)) || voices[0];
+  
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.voice = voice;
+      utter.pitch = 1;    // Soothing tone
+      utter.rate = 0.9;   // Slower speed for calm effect
+      utter.volume = 1;
+      synth.speak(utter);
+    }
+  
+    async function sendMsg() {
+      const userText = input.value.trim();
+      if (!userText) return;
+  
+      addMessage(userText, "user");
+      messages.push({ role: "user", content: userText });
+      input.value = "";
+  
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "llama3-8b-8192",
+          messages: messages
+        })
+      });
+  
+      const data = await res.json();
+      const reply = data.choices[0].message.content.trim();
+      const shortReply = reply.split('. ').slice(0, 2).join('. ') + '.';
+  
+      addMessage(shortReply, "bot");
+      speak(shortReply);
+      messages.push({ role: "assistant", content: shortReply });
+    }
+  
+    // Speech-to-text
+    function startSpeech() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Your browser doesn't support Speech Recognition.");
+        return;
+      }
+  
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+  
+      recognition.start();
+  
+      recognition.onresult = (event) => {
+        const spokenText = event.results[0][0].transcript;
+        input.value = spokenText;
+        sendMsg();
+      };
+  
+      recognition.onerror = (event) => {
+        alert("Speech recognition error: " + event.error);
+      };
+    }
+  
+    // Load voices before first speak
+    window.speechSynthesis.onvoiceschanged = () => {};
+  </script>
