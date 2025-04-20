@@ -1,122 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Virtual Therapist</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-    html, body {
-      height: 100%;
-      font-family: 'Segoe UI', sans-serif;
-      background: #e6f2ff;
-    }
+  html, body {
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    background: #e6f2ff;
+  }
 
-    .container {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      max-width: 600px;
-      margin: auto;
-      background: #fff;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    }
+  .container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
 
+  header {
+    background-color: #3f87a6;
+    color: white;
+    padding: 16px;
+    font-size: 20px;
+    text-align: center;
+  }
+
+  #chat {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background: #f9f9f9;
+  }
+
+  .message {
+    margin: 8px 0;
+    padding: 10px 14px;
+    border-radius: 16px;
+    max-width: 80%;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.3s ease-out forwards;
+    word-wrap: break-word;
+  }
+
+  .user {
+    background-color: #d1ecf1;
+    align-self: flex-end;
+    text-align: right;
+  }
+
+  .bot {
+    background-color: #e2e3e5;
+    align-self: flex-start;
+  }
+
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .input-area {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid #ccc;
+    background: #fff;
+    align-items: center;
+  }
+
+  .input-area input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+
+  .input-area button {
+    margin-left: 8px;
+    padding: 10px 12px;
+    border: none;
+    background-color: #3f87a6;
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+  }
+
+  .input-area button:hover {
+    background-color: #346f8b;
+  }
+
+  .mic-button {
+    background-color: #e05d5d;
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    margin-left: 6px;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+  }
+
+  .mic-button:hover {
+    background-color: #c34747;
+  }
+
+  @media (max-width: 600px) {
     header {
-      background-color: #3f87a6;
-      color: white;
-      padding: 16px;
-      font-size: 20px;
-      text-align: center;
-    }
-
-    #chat {
-      flex: 1;
-      padding: 16px;
-      overflow-y: auto;
-      background: #f9f9f9;
-    }
-
-    .message {
-      margin: 8px 0;
-      padding: 10px 14px;
-      border-radius: 16px;
-      max-width: 80%;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: slideIn 0.3s ease-out forwards;
-    }
-
-    .user {
-      background-color: #d1ecf1;
-      align-self: flex-end;
-      text-align: right;
-    }
-
-    .bot {
-      background-color: #e2e3e5;
-      align-self: flex-start;
-    }
-
-    @keyframes slideIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .input-area {
-      display: flex;
+      font-size: 18px;
       padding: 12px;
-      border-top: 1px solid #ccc;
-      background: #fff;
-      align-items: center;
     }
 
     .input-area input {
-      flex: 1;
-      padding: 10px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      font-size: 16px;
+      font-size: 15px;
     }
 
-    .input-area button {
-      margin-left: 10px;
-      padding: 10px 16px;
-      border: none;
-      background-color: #3f87a6;
-      color: white;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .input-area button:hover {
-      background-color: #346f8b;
-    }
-
+    .input-area button,
     .mic-button {
-      background-color: #e05d5d;
-      color: white;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 18px;
-      margin-left: 10px;
-      cursor: pointer;
-      border: none;
-      transition: background 0.2s;
+      font-size: 14px;
+      padding: 8px 10px;
     }
 
-    .mic-button:hover {
-      background-color: #c34747;
+    .message {
+      font-size: 15px;
     }
-  </style>
+  }
+</style>
+
 </head>
 <body>
   <div class="container">
